@@ -9,7 +9,6 @@ import io.github.clechasseur.deckr.model.Shoe;
 import io.github.clechasseur.deckr.model.Suit;
 import io.github.clechasseur.deckr.repository.ShoeRepository;
 import io.github.clechasseur.deckr.util.CardUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -22,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -48,8 +49,8 @@ public class ShoeServiceTest {
 
         Shoe shoe = shoeService.createShoe(1L);
 
-        Assertions.assertThat(shoe).isNotNull();
-        Assertions.assertThat(shoe.getGame()).isEqualTo(game);
+        assertThat(shoe).isNotNull();
+        assertThat(shoe.getGame()).isEqualTo(game);
         verify(gameService).getGame(1L);
         verify(shoeRepository).save(any(Shoe.class));
     }
@@ -61,8 +62,7 @@ public class ShoeServiceTest {
         when(game.getShoe()).thenReturn(shoe);
         when(gameService.getGame(1L)).thenReturn(game);
 
-        Assertions.assertThatThrownBy(() -> shoeService.createShoe(1L))
-                .isInstanceOf(GameAlreadyHasShoeException.class);
+        assertThatThrownBy(() -> shoeService.createShoe(1L)).isInstanceOf(GameAlreadyHasShoeException.class);
         verify(gameService).getGame(1L);
         verifyNoInteractions(shoeRepository);
     }
@@ -71,8 +71,7 @@ public class ShoeServiceTest {
     public void getShoeWithNoShoeThrowsException() {
         when(shoeRepository.findById(any())).thenReturn(Optional.empty());
 
-        Assertions.assertThatThrownBy(() -> shoeService.getShoe(1L))
-                .isInstanceOf(ShoeNotFoundException.class);
+        assertThatThrownBy(() -> shoeService.getShoe(1L)).isInstanceOf(ShoeNotFoundException.class);
         verify(shoeRepository).findById(1L);
     }
 
@@ -83,8 +82,8 @@ public class ShoeServiceTest {
 
         Shoe actualShoe = shoeService.getShoe(1L);
 
-        Assertions.assertThat(actualShoe).isNotNull();
-        Assertions.assertThat(actualShoe).isEqualTo(shoe);
+        assertThat(actualShoe).isNotNull();
+        assertThat(actualShoe).isEqualTo(shoe);
         verify(shoeRepository).findById(1L);
     }
 
@@ -95,8 +94,8 @@ public class ShoeServiceTest {
         Shoe shoe = mock(Shoe.class);
         Shoe updatedShoe = shoeService.updateShoe(shoe);
 
-        Assertions.assertThat(updatedShoe).isNotNull();
-        Assertions.assertThat(updatedShoe).isEqualTo(shoe);
+        assertThat(updatedShoe).isNotNull();
+        assertThat(updatedShoe).isEqualTo(shoe);
         verify(shoeRepository).save(any(Shoe.class));
     }
 
@@ -111,7 +110,7 @@ public class ShoeServiceTest {
         ArgumentCaptor<Shoe> shoeArgumentCaptor = ArgumentCaptor.forClass(Shoe.class);
         verify(shoeRepository).save(shoeArgumentCaptor.capture());
         Shoe actualShoe = shoeArgumentCaptor.getValue();
-        Assertions.assertThat(CardUtils.cardsAsList(actualShoe.getCards()).size()).isEqualTo(52);
+        assertThat(CardUtils.cardsAsList(actualShoe.getCards()).size()).isEqualTo(52);
     }
 
     @Test
@@ -126,9 +125,9 @@ public class ShoeServiceTest {
         ArgumentCaptor<Shoe> shoeArgumentCaptor = ArgumentCaptor.forClass(Shoe.class);
         verify(shoeRepository).save(shoeArgumentCaptor.capture());
         Shoe actualShoe = shoeArgumentCaptor.getValue();
-        Assertions.assertThat(actualShoe).isNotNull();
-        Assertions.assertThat(actualShoe.getCards()).isNotEqualTo("H1,H2,H3,H4,H5,H6");
-        Assertions.assertThat(CardUtils.cardsAsList(actualShoe.getCards()).size()).isEqualTo(6);
+        assertThat(actualShoe).isNotNull();
+        assertThat(actualShoe.getCards()).isNotEqualTo("H1,H2,H3,H4,H5,H6");
+        assertThat(CardUtils.cardsAsList(actualShoe.getCards()).size()).isEqualTo(6);
     }
 
     @Test
@@ -150,8 +149,8 @@ public class ShoeServiceTest {
 
         Map<Suit, Integer> counts = shoeService.getCountOfCardsLeftBySuit(1L);
 
-        Assertions.assertThat(counts).isNotNull();
-        Assertions.assertThat(counts).isEqualTo(Map.of(Suit.Hearts, 3, Suit.Diamonds, 2, Suit.Spades, 5));
+        assertThat(counts).isNotNull();
+        assertThat(counts).isEqualTo(Map.of(Suit.Hearts, 3, Suit.Diamonds, 2, Suit.Spades, 5));
         verify(shoeRepository).findById(1L);
     }
 
@@ -163,8 +162,8 @@ public class ShoeServiceTest {
 
         List<CardAndSuit> cards = shoeService.getCardsLeft(1L);
 
-        Assertions.assertThat(cards).isNotNull();
-        Assertions.assertThat(cards).isEqualTo(Arrays.asList(
+        assertThat(cards).isNotNull();
+        assertThat(cards).isEqualTo(Arrays.asList(
                 new CardAndSuit(Card.Ten, Suit.Hearts),
                 new CardAndSuit(Card.Nine, Suit.Hearts),
                 new CardAndSuit(Card.Three, Suit.Hearts),

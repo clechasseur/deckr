@@ -5,7 +5,6 @@ import io.github.clechasseur.deckr.model.Game;
 import io.github.clechasseur.deckr.model.Player;
 import io.github.clechasseur.deckr.model.PlayerAndValue;
 import io.github.clechasseur.deckr.repository.GameRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,6 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -38,8 +39,8 @@ public class GameServiceTest {
 
         Game game = gameService.createGame("Test game");
 
-        Assertions.assertThat(game).isNotNull();
-        Assertions.assertThat(game.getName()).isEqualTo("Test game");
+        assertThat(game).isNotNull();
+        assertThat(game.getName()).isEqualTo("Test game");
         verify(gameRepository).save(any(Game.class));
     }
 
@@ -47,8 +48,7 @@ public class GameServiceTest {
     public void getGameWithNoGameThrowsException() {
         when(gameRepository.findById(any())).thenReturn(Optional.empty());
 
-        Assertions.assertThatThrownBy(() -> gameService.getGame(1L))
-                .isInstanceOf(GameNotFoundException.class);
+        assertThatThrownBy(() -> gameService.getGame(1L)).isInstanceOf(GameNotFoundException.class);
         verify(gameRepository).findById(1L);
     }
 
@@ -59,8 +59,8 @@ public class GameServiceTest {
 
         Game actualGame = gameService.getGame(1L);
 
-        Assertions.assertThat(actualGame).isNotNull();
-        Assertions.assertThat(actualGame).isEqualTo(game);
+        assertThat(actualGame).isNotNull();
+        assertThat(actualGame).isEqualTo(game);
         verify(gameRepository).findById(1L);
     }
 
@@ -71,8 +71,8 @@ public class GameServiceTest {
         Game game = mock(Game.class);
         Game updatedGame = gameService.updateGame(game);
 
-        Assertions.assertThat(updatedGame).isNotNull();
-        Assertions.assertThat(updatedGame).isEqualTo(game);
+        assertThat(updatedGame).isNotNull();
+        assertThat(updatedGame).isEqualTo(game);
         verify(gameRepository).save(any(Game.class));
     }
 
@@ -87,8 +87,7 @@ public class GameServiceTest {
     public void deleteGameOnANonExistentGameThrowsException() {
         doThrow(new EmptyResultDataAccessException(1)).when(gameRepository).deleteById(any());
 
-        Assertions.assertThatThrownBy(() -> gameService.deleteGame(1L))
-                .isInstanceOf(GameNotFoundException.class);
+        assertThatThrownBy(() -> gameService.deleteGame(1L)).isInstanceOf(GameNotFoundException.class);
     }
 
     @Test
@@ -102,8 +101,8 @@ public class GameServiceTest {
 
         List<PlayerAndValue> players = gameService.getPlayersAndValues(1L);
 
-        Assertions.assertThat(players).isNotNull();
-        Assertions.assertThat(players).isEqualTo(Arrays.asList(
+        assertThat(players).isNotNull();
+        assertThat(players).isEqualTo(Arrays.asList(
                 new PlayerAndValue(player2, 30),
                 new PlayerAndValue(player3, 21),
                 new PlayerAndValue(player1, 14)

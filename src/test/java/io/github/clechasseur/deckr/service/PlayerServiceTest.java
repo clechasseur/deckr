@@ -9,7 +9,6 @@ import io.github.clechasseur.deckr.model.Player;
 import io.github.clechasseur.deckr.model.Shoe;
 import io.github.clechasseur.deckr.model.Suit;
 import io.github.clechasseur.deckr.repository.PlayerRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -23,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -51,9 +52,9 @@ public class PlayerServiceTest {
 
         Player player = playerService.createPlayer(1L, "Player 1");
 
-        Assertions.assertThat(player).isNotNull();
-        Assertions.assertThat(player.getGame()).isEqualTo(game);
-        Assertions.assertThat(player.getName()).isEqualTo("Player 1");
+        assertThat(player).isNotNull();
+        assertThat(player.getGame()).isEqualTo(game);
+        assertThat(player.getName()).isEqualTo("Player 1");
         verify(gameService).getGame(1L);
         verify(playerRepository).save(any(Player.class));
     }
@@ -62,8 +63,7 @@ public class PlayerServiceTest {
     public void getPlayerWithNoPlayerThrowsException() {
         when(playerRepository.findById(any())).thenReturn(Optional.empty());
 
-        Assertions.assertThatThrownBy(() -> playerService.getPlayer(1L))
-                .isInstanceOf(PlayerNotFoundException.class);
+        assertThatThrownBy(() -> playerService.getPlayer(1L)).isInstanceOf(PlayerNotFoundException.class);
         verify(playerRepository).findById(1L);
     }
 
@@ -74,8 +74,8 @@ public class PlayerServiceTest {
 
         Player actualPlayer = playerService.getPlayer(1L);
 
-        Assertions.assertThat(actualPlayer).isNotNull();
-        Assertions.assertThat(actualPlayer).isEqualTo(player);
+        assertThat(actualPlayer).isNotNull();
+        assertThat(actualPlayer).isEqualTo(player);
         verify(playerRepository).findById(1L);
     }
 
@@ -94,14 +94,13 @@ public class PlayerServiceTest {
         ArgumentCaptor<Game> gameArgumentCaptor = ArgumentCaptor.forClass(Game.class);
         verify(gameService).updateGame(gameArgumentCaptor.capture());
         Game actualGame = gameArgumentCaptor.getValue();
-        Assertions.assertThat(game).isNotNull();
-        Assertions.assertThat(game.getPlayers()).isNullOrEmpty();
+        assertThat(game).isNotNull();
+        assertThat(game.getPlayers()).isNullOrEmpty();
     }
 
     @Test
     public void deletePlayerOnANonExistentPlayerThrowsException() {
-        Assertions.assertThatThrownBy(() -> playerService.deletePlayer(1L))
-                .isInstanceOf(PlayerNotFoundException.class);
+        assertThatThrownBy(() -> playerService.deletePlayer(1L)).isInstanceOf(PlayerNotFoundException.class);
     }
 
     @Test
@@ -112,8 +111,8 @@ public class PlayerServiceTest {
 
         List<CardAndSuit> cards = playerService.getCards(1L);
 
-        Assertions.assertThat(cards).isNotNull();
-        Assertions.assertThat(cards).isEqualTo(Arrays.asList(
+        assertThat(cards).isNotNull();
+        assertThat(cards).isEqualTo(Arrays.asList(
                 new CardAndSuit(Card.Nine, Suit.Hearts),
                 new CardAndSuit(Card.Ace, Suit.Diamonds),
                 new CardAndSuit(Card.King, Suit.Spades),
@@ -129,7 +128,7 @@ public class PlayerServiceTest {
         player.setGame(game);
         when(playerRepository.findById(1L)).thenReturn(Optional.of(player));
 
-        Assertions.assertThatThrownBy(() -> playerService.dealCards(1L, 1))
+        assertThatThrownBy(() -> playerService.dealCards(1L, 1))
                 .isInstanceOf(GameWithoutShoeException.class);
         verify(playerRepository).findById(1L);
     }
@@ -153,10 +152,10 @@ public class PlayerServiceTest {
         verify(playerRepository).save(playerArgumentCaptor.capture());
         Shoe actualShoe = shoeArgumentCaptor.getValue();
         Player actualPlayer = playerArgumentCaptor.getValue();
-        Assertions.assertThat(actualShoe).isNotNull();
-        Assertions.assertThat(actualShoe.getCards()).isEqualTo("D1,H7");
-        Assertions.assertThat(actualPlayer).isNotNull();
-        Assertions.assertThat(actualPlayer.getHand()).isEqualTo("H4,D10,S3,C13");
+        assertThat(actualShoe).isNotNull();
+        assertThat(actualShoe.getCards()).isEqualTo("D1,H7");
+        assertThat(actualPlayer).isNotNull();
+        assertThat(actualPlayer.getHand()).isEqualTo("H4,D10,S3,C13");
     }
 
     @Test
@@ -178,10 +177,10 @@ public class PlayerServiceTest {
         verify(playerRepository).save(playerArgumentCaptor.capture());
         Shoe actualShoe = shoeArgumentCaptor.getValue();
         Player actualPlayer = playerArgumentCaptor.getValue();
-        Assertions.assertThat(actualShoe).isNotNull();
-        Assertions.assertThat(actualShoe.getCards()).isEmpty();
-        Assertions.assertThat(actualPlayer).isNotNull();
-        Assertions.assertThat(actualPlayer.getHand()).isEqualTo("H4,D10,S3,C13,D1,H7");
+        assertThat(actualShoe).isNotNull();
+        assertThat(actualShoe.getCards()).isEmpty();
+        assertThat(actualPlayer).isNotNull();
+        assertThat(actualPlayer.getHand()).isEqualTo("H4,D10,S3,C13,D1,H7");
     }
 
     @Test
@@ -203,10 +202,10 @@ public class PlayerServiceTest {
         verify(playerRepository).save(playerArgumentCaptor.capture());
         Shoe actualShoe = shoeArgumentCaptor.getValue();
         Player actualPlayer = playerArgumentCaptor.getValue();
-        Assertions.assertThat(actualShoe).isNotNull();
-        Assertions.assertThat(actualShoe.getCards()).isEmpty();
-        Assertions.assertThat(actualPlayer).isNotNull();
-        Assertions.assertThat(actualPlayer.getHand()).isEqualTo("H4,D10,S3,C13,D1,H7");
+        assertThat(actualShoe).isNotNull();
+        assertThat(actualShoe.getCards()).isEmpty();
+        assertThat(actualPlayer).isNotNull();
+        assertThat(actualPlayer.getHand()).isEqualTo("H4,D10,S3,C13,D1,H7");
     }
 
     @Test
