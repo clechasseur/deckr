@@ -6,12 +6,10 @@ import io.github.clechasseur.deckr.model.Player;
 import io.github.clechasseur.deckr.model.PlayerAndValue;
 import io.github.clechasseur.deckr.repository.GameRepository;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.EmptyResultDataAccessException;
 
@@ -19,6 +17,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class GameServiceTest {
@@ -30,58 +34,58 @@ public class GameServiceTest {
 
     @Test
     public void createGameReturnsNewGame() {
-        Mockito.when(gameRepository.save(Mockito.any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(gameRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         Game game = gameService.createGame("Test game");
 
         Assertions.assertThat(game).isNotNull();
         Assertions.assertThat(game.getName()).isEqualTo("Test game");
-        Mockito.verify(gameRepository).save(Mockito.any(Game.class));
+        verify(gameRepository).save(any(Game.class));
     }
 
     @Test
     public void getGameWithNoGameThrowsException() {
-        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.empty());
+        when(gameRepository.findById(any())).thenReturn(Optional.empty());
 
         Assertions.assertThatThrownBy(() -> gameService.getGame(1L))
                 .isInstanceOf(GameNotFoundException.class);
-        Mockito.verify(gameRepository).findById(1L);
+        verify(gameRepository).findById(1L);
     }
 
     @Test
     public void getGameWithAGameReturnsGame() {
-        Game game = Mockito.mock(Game.class);
-        Mockito.when(gameRepository.findById(1L)).thenReturn(Optional.of(game));
+        Game game = mock(Game.class);
+        when(gameRepository.findById(1L)).thenReturn(Optional.of(game));
 
         Game actualGame = gameService.getGame(1L);
 
         Assertions.assertThat(actualGame).isNotNull();
         Assertions.assertThat(actualGame).isEqualTo(game);
-        Mockito.verify(gameRepository).findById(1L);
+        verify(gameRepository).findById(1L);
     }
 
     @Test
     public void updateGameReturnsUpdatedGame() {
-        Mockito.when(gameRepository.save(Mockito.any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(gameRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Game game = Mockito.mock(Game.class);
+        Game game = mock(Game.class);
         Game updatedGame = gameService.updateGame(game);
 
         Assertions.assertThat(updatedGame).isNotNull();
         Assertions.assertThat(updatedGame).isEqualTo(game);
-        Mockito.verify(gameRepository).save(Mockito.any(Game.class));
+        verify(gameRepository).save(any(Game.class));
     }
 
     @Test
     public void deleteGameDeletesGame() {
         gameService.deleteGame(1L);
 
-        Mockito.verify(gameRepository).deleteById(1L);
+        verify(gameRepository).deleteById(1L);
     }
 
     @Test
     public void deleteGameOnANonExistentGameThrowsException() {
-        Mockito.doThrow(new EmptyResultDataAccessException(1)).when(gameRepository).deleteById(Mockito.any());
+        doThrow(new EmptyResultDataAccessException(1)).when(gameRepository).deleteById(any());
 
         Assertions.assertThatThrownBy(() -> gameService.deleteGame(1L))
                 .isInstanceOf(GameNotFoundException.class);
@@ -94,7 +98,7 @@ public class GameServiceTest {
         Player player1 = createPlayerIn(game, "Player 1", "S10,C3,H1");
         Player player2 = createPlayerIn(game, "Player 2", "D2,H12,H7,H9");
         Player player3 = createPlayerIn(game, "Player 3", "S1,D6,C13,H1");
-        Mockito.when(gameRepository.findById(1L)).thenReturn(Optional.of(game));
+        when(gameRepository.findById(1L)).thenReturn(Optional.of(game));
 
         List<PlayerAndValue> players = gameService.getPlayersAndValues(1L);
 

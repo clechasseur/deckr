@@ -1,7 +1,7 @@
 package io.github.clechasseur.deckr.model;
 
 public enum Suit {
-    Hearths("H"),
+    Hearts("H"),
     Spades("S"),
     Clubs("C"),
     Diamonds("D");
