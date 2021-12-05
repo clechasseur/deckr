@@ -6,6 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import java.util.Objects;
 
 @Entity
@@ -15,7 +16,7 @@ public class Shoe {
     @Column(nullable = false)
     private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "gameId", nullable = false)
     private Game game;
 
@@ -51,19 +52,19 @@ public class Shoe {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Shoe shoe = (Shoe) o;
-        return id.equals(shoe.id) && game.equals(shoe.game) && Objects.equals(cards, shoe.cards);
+        return id.equals(shoe.id) && game.getId().equals(shoe.game.getId()) && Objects.equals(cards, shoe.cards);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, game, cards);
+        return Objects.hash(id, game.getId(), cards);
     }
 
     @Override
     public String toString() {
         return "Shoe{" +
                 "id=" + id +
-                ", game=" + game +
+                ", gameId=" + game.getId() +
                 ", cards='" + cards + '\'' +
                 '}';
     }

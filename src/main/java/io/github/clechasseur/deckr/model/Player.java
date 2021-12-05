@@ -20,6 +20,9 @@ public class Player {
     private Game game;
 
     @Column
+    private String name;
+
+    @Column
     private String hand;
 
     public Long getId() {
@@ -38,6 +41,14 @@ public class Player {
         this.game = game;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getHand() {
         return hand;
     }
@@ -51,19 +62,21 @@ public class Player {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Player player = (Player) o;
-        return id.equals(player.id) && game.equals(player.game) && Objects.equals(hand, player.hand);
+        return id.equals(player.id) && game.getId().equals(player.game.getId()) && Objects.equals(name, player.name) &&
+                Objects.equals(hand, player.hand);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, game, hand);
+        return Objects.hash(id, game.getId(), name, hand);
     }
 
     @Override
     public String toString() {
         return "Player{" +
                 "id=" + id +
-                ", game=" + game +
+                ", gameId=" + game.getId() +
+                ", name='" + name + '\'' +
                 ", hand='" + hand + '\'' +
                 '}';
     }
