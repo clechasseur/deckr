@@ -23,6 +23,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -40,6 +41,9 @@ public class PlayerControllerTest {
     @MockBean
     private PlayerService playerService;
 
+    @MockBean
+    private PlayerModelAssembler playerModelAssembler;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
@@ -55,6 +59,7 @@ public class PlayerControllerTest {
             player.setGame(game);
             return player;
         });
+        when(playerModelAssembler.toModel(any())).thenCallRealMethod();
 
         Game game = new Game();
         game.setId(1L);
@@ -71,6 +76,20 @@ public class PlayerControllerTest {
                 .andExpect(jsonPath("$.game.name").value("Test game"));
 
         verify(playerService).createPlayer(1L, "Player 1");
+        verify(playerModelAssembler).toModel(any(Player.class));
+    }
+
+    @Test
+    public void createPlayerWithoutGameReturnsBadRequest() throws Exception {
+        Player player = new Player();
+        player.setName("Player 1");
+        mockMvc.perform(post("/api/player")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(player)))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(playerService);
+        verifyNoInteractions(playerModelAssembler);
     }
 
     @Test
@@ -78,12 +97,14 @@ public class PlayerControllerTest {
         Player player = new Player();
         player.setName("Player 1");
         when(playerService.getPlayer(3L)).thenReturn(player);
+        when(playerModelAssembler.toModel(any())).thenCallRealMethod();
 
         mockMvc.perform(get("/api/player/3"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Player 1"));
 
         verify(playerService).getPlayer(3L);
+        verify(playerModelAssembler).toModel(any(Player.class));
     }
 
     @Test
@@ -94,6 +115,7 @@ public class PlayerControllerTest {
                 .andExpect(status().isNotFound());
 
         verify(playerService).getPlayer(3L);
+        verifyNoInteractions(playerModelAssembler);
     }
 
     @Test
@@ -114,10 +136,10 @@ public class PlayerControllerTest {
 
         mockMvc.perform(get("/api/player/3/hand"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].card").value("King"))
-                .andExpect(jsonPath("$[0].suit").value("Diamonds"))
-                .andExpect(jsonPath("$[1].card").value("Seven"))
-                .andExpect(jsonPath("$[1].suit").value("Spades"));
+                .andExpect(jsonPath("$._embedded.cardAndSuitList[0].card").value("King"))
+                .andExpect(jsonPath("$._embedded.cardAndSuitList[0].suit").value("Diamonds"))
+                .andExpect(jsonPath("$._embedded.cardAndSuitList[1].card").value("Seven"))
+                .andExpect(jsonPath("$._embedded.cardAndSuitList[1].suit").value("Spades"));
 
         verify(playerService).getCards(3L);
     }
