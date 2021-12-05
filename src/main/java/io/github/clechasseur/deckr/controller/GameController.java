@@ -2,12 +2,15 @@ package io.github.clechasseur.deckr.controller;
 
 import io.github.clechasseur.deckr.exception.GameWithoutShoeException;
 import io.github.clechasseur.deckr.model.CardAndSuit;
+import io.github.clechasseur.deckr.model.CountsBySuit;
 import io.github.clechasseur.deckr.model.Game;
 import io.github.clechasseur.deckr.model.PlayerAndValue;
 import io.github.clechasseur.deckr.model.Shoe;
 import io.github.clechasseur.deckr.model.Suit;
 import io.github.clechasseur.deckr.service.GameService;
 import io.github.clechasseur.deckr.service.ShoeService;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,27 +25,40 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/game")
 public class GameController {
     private final GameService gameService;
     private final ShoeService shoeService;
+    private final GameModelAssembler gameModelAssembler;
+    private final ShoeModelAssembler shoeModelAssembler;
 
-    public GameController(GameService gameService, ShoeService shoeService) {
+    public GameController(
+            GameService gameService,
+            ShoeService shoeService,
+            GameModelAssembler gameModelAssembler,
+            ShoeModelAssembler shoeModelAssembler
+    ) {
         this.gameService = gameService;
         this.shoeService = shoeService;
+        this.gameModelAssembler = gameModelAssembler;
+        this.shoeModelAssembler = shoeModelAssembler;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Game createGame(@RequestBody Game game) {
-        return gameService.createGame(game.getName());
+    public EntityModel<Game> createGame(@RequestBody Game game) {
+        return gameModelAssembler.toModel(gameService.createGame(game.getName()));
     }
 
     @GetMapping("/{id}")
-    public Game getGame(@PathVariable Long id) {
-        return gameService.getGame(id);
+    public EntityModel<Game> getGame(@PathVariable Long id) {
+        return gameModelAssembler.toModel(gameService.getGame(id));
     }
 
     @DeleteMapping("/{id}")
@@ -53,13 +69,13 @@ public class GameController {
 
     @PostMapping("/{gameId}/shoe")
     @ResponseStatus(HttpStatus.CREATED)
-    public Shoe createShoe(@PathVariable Long gameId) {
-        return shoeService.createShoe(gameId);
+    public EntityModel<Shoe> createShoe(@PathVariable Long gameId) {
+        return shoeModelAssembler.toModel(shoeService.createShoe(gameId));
     }
 
     @GetMapping("/{gameId}/shoe")
-    public Shoe getShoe(@PathVariable Long gameId) {
-        return shoeService.getShoe(getGameShoe(gameId).getId());
+    public EntityModel<Shoe> getShoe(@PathVariable Long gameId) {
+        return shoeModelAssembler.toModel(shoeService.getShoe(getGameShoe(gameId).getId()));
     }
 
     @PutMapping("/{gameId}/shoe")
@@ -75,18 +91,29 @@ public class GameController {
     }
 
     @GetMapping("/{gameId}/shoe/suits")
-    public Map<Suit, Integer> getCountOfCardsLeftInShoeBySuit(@PathVariable Long gameId) {
-        return shoeService.getCountOfCardsLeftBySuit(getGameShoe(gameId).getId());
+    public EntityModel<CountsBySuit> getCountOfCardsLeftInShoeBySuit(@PathVariable Long gameId) {
+        CountsBySuit counts = new CountsBySuit(shoeService.getCountOfCardsLeftBySuit(getGameShoe(gameId).getId()));
+        return EntityModel.of(counts,
+                linkTo(methodOn(GameController.class).getCountOfCardsLeftInShoeBySuit(gameId)).withSelfRel(),
+                linkTo(methodOn(GameController.class).getShoe(gameId)).withRel("shoe"),
+                linkTo(methodOn(GameController.class).getGame(gameId)).withRel("game"));
     }
 
     @GetMapping("/{gameId}/shoe/cards")
-    public List<CardAndSuit> getCardsLeftInShoe(@PathVariable Long gameId) {
-        return shoeService.getCardsLeft(getGameShoe(gameId).getId());
+    public CollectionModel<EntityModel<CardAndSuit>> getCardsLeftInShoe(@PathVariable Long gameId) {
+        List<CardAndSuit> cards = shoeService.getCardsLeft(getGameShoe(gameId).getId());
+        return CollectionModel.of(cards.stream().map(EntityModel::of).collect(Collectors.toList()),
+                linkTo(methodOn(GameController.class).getCardsLeftInShoe(gameId)).withSelfRel(),
+                linkTo(methodOn(GameController.class).getShoe(gameId)).withRel("shoe"),
+                linkTo(methodOn(GameController.class).getGame(gameId)).withRel("game"));
     }
 
     @GetMapping("/{gameId}/players")
-    public List<PlayerAndValue> getPlayersAndValues(@PathVariable Long gameId) {
-        return gameService.getPlayersAndValues(gameId);
+    public CollectionModel<EntityModel<PlayerAndValue>> getPlayersAndValues(@PathVariable Long gameId) {
+        List<PlayerAndValue> players = gameService.getPlayersAndValues(gameId);
+        return CollectionModel.of(players.stream().map(EntityModel::of).collect(Collectors.toList()),
+                linkTo(methodOn(GameController.class).getPlayersAndValues(gameId)).withSelfRel(),
+                linkTo(methodOn(GameController.class).getGame(gameId)).withRel("game"));
     }
 
     private Shoe getGameShoe(Long gameId) {

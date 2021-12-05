@@ -48,6 +48,12 @@ public class GameControllerTest {
     @MockBean
     private ShoeService shoeService;
 
+    @MockBean
+    private GameModelAssembler gameModelAssembler;
+
+    @MockBean
+    private ShoeModelAssembler shoeModelAssembler;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
@@ -57,6 +63,7 @@ public class GameControllerTest {
             game.setName(invocation.getArgument(0));
             return game;
         });
+        when(gameModelAssembler.toModel(any())).thenCallRealMethod();
 
         Game game = new Game();
         game.setName("Test game");
@@ -67,6 +74,7 @@ public class GameControllerTest {
                 .andExpect(jsonPath("$.name").value("Test game"));
 
         verify(gameService).createGame("Test game");
+        verify(gameModelAssembler).toModel(any(Game.class));
     }
 
     @Test
@@ -74,12 +82,14 @@ public class GameControllerTest {
         Game game = new Game();
         game.setName("Test game");
         when(gameService.getGame(1L)).thenReturn(game);
+        when(gameModelAssembler.toModel(any())).thenCallRealMethod();
 
         mockMvc.perform(get("/api/game/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Test game"));
 
         verify(gameService).getGame(1L);
+        verify(gameModelAssembler).toModel(any(Game.class));
     }
 
     @Test
@@ -90,6 +100,7 @@ public class GameControllerTest {
                 .andExpect(status().isNotFound());
 
         verify(gameService).getGame(1L);
+        verifyNoInteractions(gameModelAssembler);
     }
 
     @Test
@@ -110,12 +121,14 @@ public class GameControllerTest {
         shoe.setGame(game);
         game.setShoe(shoe);
         when(shoeService.createShoe(1L)).thenReturn(shoe);
+        when(shoeModelAssembler.toModel(any())).thenCallRealMethod();
 
         mockMvc.perform(post("/api/game/1/shoe"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.game.name").value("Test game"));
 
         verify(shoeService).createShoe(1L);
+        verify(shoeModelAssembler).toModel(any(Shoe.class));
     }
 
     @Test
@@ -129,6 +142,7 @@ public class GameControllerTest {
         game.setShoe(shoe);
         when(gameService.getGame(1L)).thenReturn(game);
         when(shoeService.getShoe(2L)).thenReturn(shoe);
+        when(shoeModelAssembler.toModel(any())).thenCallRealMethod();
 
         mockMvc.perform(get("/api/game/1/shoe"))
                 .andExpect(status().isOk())
@@ -136,6 +150,7 @@ public class GameControllerTest {
 
         verify(gameService).getGame(1L);
         verify(shoeService).getShoe(2L);
+        verify(shoeModelAssembler).toModel(any(Shoe.class));
     }
 
     @Test
@@ -149,6 +164,7 @@ public class GameControllerTest {
 
         verify(gameService).getGame(1L);
         verifyNoInteractions(shoeService);
+        verifyNoInteractions(shoeModelAssembler);
     }
 
     @Test
@@ -202,9 +218,9 @@ public class GameControllerTest {
 
         mockMvc.perform(get("/api/game/1/shoe/suits"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.Hearts").value(10))
-                .andExpect(jsonPath("$.Clubs").value(8))
-                .andExpect(jsonPath("$.Diamonds").value(2));
+                .andExpect(jsonPath("$.counts.Hearts").value(10))
+                .andExpect(jsonPath("$.counts.Clubs").value(8))
+                .andExpect(jsonPath("$.counts.Diamonds").value(2));
 
         verify(gameService).getGame(1L);
         verify(shoeService).getCountOfCardsLeftBySuit(2L);
@@ -228,10 +244,10 @@ public class GameControllerTest {
 
         mockMvc.perform(get("/api/game/1/shoe/cards"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].card").value("Ten"))
-                .andExpect(jsonPath("$[0].suit").value("Clubs"))
-                .andExpect(jsonPath("$[1].card").value("Ace"))
-                .andExpect(jsonPath("$[1].suit").value("Spades"));
+                .andExpect(jsonPath("$._embedded.cardAndSuitList[0].card").value("Ten"))
+                .andExpect(jsonPath("$._embedded.cardAndSuitList[0].suit").value("Clubs"))
+                .andExpect(jsonPath("$._embedded.cardAndSuitList[1].card").value("Ace"))
+                .andExpect(jsonPath("$._embedded.cardAndSuitList[1].suit").value("Spades"));
 
         verify(gameService).getGame(1L);
         verify(shoeService).getCardsLeft(2L);
@@ -251,10 +267,10 @@ public class GameControllerTest {
 
         mockMvc.perform(get("/api/game/1/players"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].player.name").value("Player 1"))
-                .andExpect(jsonPath("$[0].value").value(42))
-                .andExpect(jsonPath("$[1].player.name").value("Player 2"))
-                .andExpect(jsonPath("$[1].value").value(23));
+                .andExpect(jsonPath("$._embedded.playerAndValueList[0].player.name").value("Player 1"))
+                .andExpect(jsonPath("$._embedded.playerAndValueList[0].value").value(42))
+                .andExpect(jsonPath("$._embedded.playerAndValueList[1].player.name").value("Player 2"))
+                .andExpect(jsonPath("$._embedded.playerAndValueList[1].value").value(23));
 
         verify(gameService).getPlayersAndValues(1L);
     }
