@@ -7,7 +7,6 @@ import io.github.clechasseur.deckr.model.Player;
 import io.github.clechasseur.deckr.model.PlayerAndValue;
 import io.github.clechasseur.deckr.repository.GameRepository;
 import io.github.clechasseur.deckr.util.CardUtils;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 

@@ -1,7 +1,6 @@
 package io.github.clechasseur.deckr.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.clechasseur.deckr.exception.GameNotFoundException;
 import io.github.clechasseur.deckr.exception.PlayerNotFoundException;
 import io.github.clechasseur.deckr.model.Card;
 import io.github.clechasseur.deckr.model.CardAndSuit;

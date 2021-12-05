@@ -1,17 +1,13 @@
 package io.github.clechasseur.deckr.service;
 
-import io.github.clechasseur.deckr.exception.GameNotFoundException;
 import io.github.clechasseur.deckr.exception.GameWithoutShoeException;
 import io.github.clechasseur.deckr.exception.PlayerNotFoundException;
 import io.github.clechasseur.deckr.model.CardAndSuit;
 import io.github.clechasseur.deckr.model.Game;
 import io.github.clechasseur.deckr.model.Player;
 import io.github.clechasseur.deckr.model.Shoe;
-import io.github.clechasseur.deckr.repository.GameRepository;
 import io.github.clechasseur.deckr.repository.PlayerRepository;
-import io.github.clechasseur.deckr.repository.ShoeRepository;
 import io.github.clechasseur.deckr.util.CardUtils;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
