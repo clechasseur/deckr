@@ -5,14 +5,11 @@ import io.github.clechasseur.deckr.exception.PlayerNotFoundException;
 import io.github.clechasseur.deckr.model.Game;
 import io.github.clechasseur.deckr.model.Player;
 import io.github.clechasseur.deckr.model.Shoe;
-import io.github.clechasseur.deckr.repository.GameRepository;
 import io.github.clechasseur.deckr.repository.PlayerRepository;
 import io.github.clechasseur.deckr.repository.ShoeRepository;
-import io.github.clechasseur.deckr.util.StringUtils;
+import io.github.clechasseur.deckr.util.CardUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,28 +41,20 @@ public class PlayerService {
         playerRepository.deleteById(id);
     }
 
-    public void dealCardsToPlayer(Long id, int numCards) {
-        Player player = getPlayer(id);
+    public void dealCards(Long playerId, int numCards) {
+        Player player = getPlayer(playerId);
         Shoe shoe = player.getGame().getShoe();
         if (shoe == null) {
             throw new GameWithoutShoeException(player.getGame().getId());
         }
-        List<String> shoeCards = cardsAsList(shoe.getCards());
+        List<String> shoeCards = CardUtils.cardsAsList(shoe.getCards());
         if (!shoeCards.isEmpty()) {
-            List<String> playerHand = cardsAsList(player.getHand());
+            List<String> playerHand = CardUtils.cardsAsList(player.getHand());
             playerHand.addAll(shoeCards.stream().limit(numCards).collect(Collectors.toList()));
             player.setHand(String.join(",", playerHand));
             shoe.setCards(shoeCards.stream().skip(numCards).collect(Collectors.joining(",")));
             shoeRepository.save(shoe);
             playerRepository.save(player);
         }
-    }
-
-    private static List<String> cardsAsList(String cards) {
-        String nonEmptyCards = StringUtils.orEmptyString(cards);
-        if (nonEmptyCards.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return new ArrayList<>(Arrays.asList(nonEmptyCards.split(",")));
     }
 }

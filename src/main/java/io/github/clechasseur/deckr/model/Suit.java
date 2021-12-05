@@ -16,6 +16,11 @@ public enum Suit {
         return symbol;
     }
 
+    @Override
+    public String toString() {
+        return symbol;
+    }
+
     public static Suit fromSymbol(String symbol) {
         for (Suit s : values()) {
             if (s.getSymbol().equals(symbol)) {

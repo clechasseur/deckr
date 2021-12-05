@@ -41,6 +41,6 @@ public final class CardAndSuit {
 
     @Override
     public String toString() {
-        return suit.getSymbol() + card.getValue();
+        return suit.toString() + card;
     }
 }

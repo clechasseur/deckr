@@ -25,6 +25,11 @@ public enum Card {
         return value;
     }
 
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
     public static Card fromValue(int value) {
         for (Card c : values()) {
             if (c.getValue() == value) {

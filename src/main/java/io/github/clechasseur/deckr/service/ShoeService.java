@@ -8,10 +8,15 @@ import io.github.clechasseur.deckr.model.Shoe;
 import io.github.clechasseur.deckr.model.Suit;
 import io.github.clechasseur.deckr.repository.ShoeRepository;
 import io.github.clechasseur.deckr.util.ArrayUtils;
+import io.github.clechasseur.deckr.util.CardUtils;
 import io.github.clechasseur.deckr.util.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,8 +40,8 @@ public class ShoeService {
         return shoeRepository.findById(id).orElseThrow(() -> new ShoeNotFoundException(id));
     }
 
-    public void addDeckToShoe(Long id) {
-        Shoe shoe = getShoe(id);
+    public void addDeckToShoe(Long shoeId) {
+        Shoe shoe = getShoe(shoeId);
         String cards = StringUtils.orEmptyString(shoe.getCards());
         if (!cards.isEmpty()) {
             cards += ",";
@@ -46,12 +51,31 @@ public class ShoeService {
         shoeRepository.save(shoe);
     }
 
-    public void shuffle(Long id) {
-        Shoe shoe = getShoe(id);
+    public void shuffle(Long shoeId) {
+        Shoe shoe = getShoe(shoeId);
         String[] cards = StringUtils.orEmptyString(shoe.getCards()).split(",");
         ArrayUtils.shuffleArray(cards);
         shoe.setCards(String.join(",", cards));
         shoeRepository.save(shoe);
+    }
+
+    public Map<Suit, Integer> getCountOfCardsLeftBySuit(Long shoeId) {
+        Shoe shoe = getShoe(shoeId);
+        Map<Suit, Integer> counts = new HashMap<>();
+        CardUtils.cardsAsList(shoe.getCards()).stream()
+                .map(CardAndSuit::parse)
+                .map(CardAndSuit::getSuit)
+                .forEach(suit -> counts.put(suit, counts.getOrDefault(suit, 0) + 1));
+        return counts;
+    }
+
+    public List<CardAndSuit> getCardsLeft(Long shoeId) {
+        Shoe shoe = getShoe(shoeId);
+        return CardUtils.cardsAsList(shoe.getCards()).stream()
+                .map(CardAndSuit::parse)
+                .sorted(Comparator.comparing(CardAndSuit::getSuit)
+                        .thenComparingInt(cs -> cs.getCard().getValue()).reversed())
+                .collect(Collectors.toList());
     }
 
     private static String getStandardDeck() {
