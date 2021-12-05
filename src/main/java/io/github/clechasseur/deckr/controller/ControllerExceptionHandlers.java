@@ -1,5 +1,6 @@
 package io.github.clechasseur.deckr.controller;
 
+import io.github.clechasseur.deckr.exception.GameAlreadyHasShoeException;
 import io.github.clechasseur.deckr.exception.GameNotFoundException;
 import io.github.clechasseur.deckr.exception.GameWithoutShoeException;
 import io.github.clechasseur.deckr.exception.PlayerNotFoundException;
@@ -12,6 +13,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ControllerExceptionHandlers {
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String gameAlreadyHasShoeHandler(GameAlreadyHasShoeException ex) {
+        return ex.getMessage();
+    }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String gameNotFoundHandler(GameNotFoundException ex) {

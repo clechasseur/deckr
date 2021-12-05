@@ -1,5 +1,6 @@
 package io.github.clechasseur.deckr.service;
 
+import io.github.clechasseur.deckr.exception.GameAlreadyHasShoeException;
 import io.github.clechasseur.deckr.exception.ShoeNotFoundException;
 import io.github.clechasseur.deckr.model.Card;
 import io.github.clechasseur.deckr.model.CardAndSuit;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -50,6 +52,19 @@ public class ShoeServiceTest {
         Assertions.assertThat(shoe.getGame()).isEqualTo(game);
         verify(gameService).getGame(1L);
         verify(shoeRepository).save(any(Shoe.class));
+    }
+
+    @Test
+    public void createShoeOnAGameWithAnExistingShoeThrowsException() {
+        Game game = mock(Game.class);
+        Shoe shoe = mock(Shoe.class);
+        when(game.getShoe()).thenReturn(shoe);
+        when(gameService.getGame(1L)).thenReturn(game);
+
+        Assertions.assertThatThrownBy(() -> shoeService.createShoe(1L))
+                .isInstanceOf(GameAlreadyHasShoeException.class);
+        verify(gameService).getGame(1L);
+        verifyNoInteractions(shoeRepository);
     }
 
     @Test

@@ -1,5 +1,6 @@
 package io.github.clechasseur.deckr.service;
 
+import io.github.clechasseur.deckr.exception.GameAlreadyHasShoeException;
 import io.github.clechasseur.deckr.exception.ShoeNotFoundException;
 import io.github.clechasseur.deckr.model.Card;
 import io.github.clechasseur.deckr.model.CardAndSuit;
@@ -31,6 +32,9 @@ public class ShoeService {
 
     public Shoe createShoe(Long gameId) {
         Game game = gameService.getGame(gameId);
+        if (game.getShoe() != null) {
+            throw new GameAlreadyHasShoeException(gameId);
+        }
         Shoe shoe = new Shoe();
         shoe.setGame(game);
         return shoeRepository.save(shoe);
