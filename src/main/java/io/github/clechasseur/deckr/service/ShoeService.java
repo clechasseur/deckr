@@ -53,10 +53,13 @@ public class ShoeService {
 
     public void shuffle(Long shoeId) {
         Shoe shoe = getShoe(shoeId);
-        String[] cards = StringUtils.orEmptyString(shoe.getCards()).split(",");
-        ArrayUtils.shuffleArray(cards);
-        shoe.setCards(String.join(",", cards));
-        shoeRepository.save(shoe);
+        String nonNullCards = StringUtils.orEmptyString(shoe.getCards());
+        if (!nonNullCards.isEmpty()) {
+            String[] cards = nonNullCards.split(",");
+            ArrayUtils.shuffleArray(cards);
+            shoe.setCards(String.join(",", cards));
+            shoeRepository.save(shoe);
+        }
     }
 
     public Map<Suit, Integer> getCountOfCardsLeftBySuit(Long shoeId) {
@@ -74,7 +77,7 @@ public class ShoeService {
         return CardUtils.cardsAsList(shoe.getCards()).stream()
                 .map(CardAndSuit::parse)
                 .sorted(Comparator.comparing(CardAndSuit::getSuit)
-                        .thenComparingInt(cs -> cs.getCard().getValue()).reversed())
+                        .thenComparing(cs -> cs.getCard().getValue(), Comparator.reverseOrder()))
                 .collect(Collectors.toList());
     }
 

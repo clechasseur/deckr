@@ -9,10 +9,10 @@ public final class CardUtils {
     }
 
     public static List<String> cardsAsList(String cards) {
-        String nonEmptyCards = StringUtils.orEmptyString(cards);
-        if (nonEmptyCards.isEmpty()) {
+        String nonNullCards = StringUtils.orEmptyString(cards);
+        if (nonNullCards.isEmpty()) {
             return new ArrayList<>();
         }
-        return new ArrayList<>(Arrays.asList(nonEmptyCards.split(",")));
+        return new ArrayList<>(Arrays.asList(nonNullCards.split(",")));
     }
 }
