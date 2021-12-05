@@ -13,6 +13,7 @@ import io.github.clechasseur.deckr.util.CardUtils;
 import io.github.clechasseur.deckr.util.StringUtils;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ public class ShoeService {
         this.gameService = gameService;
     }
 
+    @Transactional
     public Shoe createShoe(Long gameId) {
         Game game = gameService.getGame(gameId);
         if (game.getShoe() != null) {
@@ -48,6 +50,7 @@ public class ShoeService {
         return shoeRepository.save(shoe);
     }
 
+    @Transactional
     public void addDeckToShoe(Long shoeId) {
         Shoe shoe = getShoe(shoeId);
         String cards = StringUtils.orEmptyString(shoe.getCards());
@@ -59,6 +62,7 @@ public class ShoeService {
         shoeRepository.save(shoe);
     }
 
+    @Transactional
     public void shuffle(Long shoeId) {
         Shoe shoe = getShoe(shoeId);
         String nonNullCards = StringUtils.orEmptyString(shoe.getCards());

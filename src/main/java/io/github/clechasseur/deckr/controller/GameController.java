@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -74,23 +75,27 @@ public class GameController {
     }
 
     @GetMapping("/{gameId}/shoe")
+    @Transactional
     public EntityModel<Shoe> getShoe(@PathVariable Long gameId) {
         return shoeModelAssembler.toModel(shoeService.getShoe(getGameShoe(gameId).getId()));
     }
 
     @PutMapping("/{gameId}/shoe")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Transactional
     public void addDeckToShoe(@PathVariable Long gameId) {
         shoeService.addDeckToShoe(getGameShoe(gameId).getId());
     }
 
     @PatchMapping("/{gameId}/shoe")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Transactional
     public void shuffleShoe(@PathVariable Long gameId) {
         shoeService.shuffle(getGameShoe(gameId).getId());
     }
 
     @GetMapping("/{gameId}/shoe/suits")
+    @Transactional
     public EntityModel<CountsBySuit> getCountOfCardsLeftInShoeBySuit(@PathVariable Long gameId) {
         CountsBySuit counts = new CountsBySuit(shoeService.getCountOfCardsLeftBySuit(getGameShoe(gameId).getId()));
         return EntityModel.of(counts,
@@ -100,6 +105,7 @@ public class GameController {
     }
 
     @GetMapping("/{gameId}/shoe/cards")
+    @Transactional
     public CollectionModel<EntityModel<CardAndSuit>> getCardsLeftInShoe(@PathVariable Long gameId) {
         List<CardAndSuit> cards = shoeService.getCardsLeft(getGameShoe(gameId).getId());
         return CollectionModel.of(cards.stream().map(EntityModel::of).collect(Collectors.toList()),

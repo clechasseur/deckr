@@ -10,6 +10,7 @@ import io.github.clechasseur.deckr.repository.PlayerRepository;
 import io.github.clechasseur.deckr.util.CardUtils;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,7 @@ public class PlayerService {
         this.shoeService = shoeService;
     }
 
+    @Transactional
     public Player createPlayer(Long gameId, String name) {
         Game game = gameService.getGame(gameId);
         Player player = new Player();
@@ -37,6 +39,7 @@ public class PlayerService {
         return playerRepository.findById(id).orElseThrow(() -> new PlayerNotFoundException(id));
     }
 
+    @Transactional
     public void deletePlayer(Long id) {
         Player player = getPlayer(id);
         Game game = player.getGame();
@@ -56,6 +59,7 @@ public class PlayerService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void dealCards(Long playerId, int numCards) {
         Player player = getPlayer(playerId);
         Shoe shoe = player.getGame().getShoe();
