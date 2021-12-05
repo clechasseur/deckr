@@ -40,6 +40,10 @@ public class ShoeService {
         return shoeRepository.findById(id).orElseThrow(() -> new ShoeNotFoundException(id));
     }
 
+    public Shoe updateShoe(Shoe shoe) {
+        return shoeRepository.save(shoe);
+    }
+
     public void addDeckToShoe(Long shoeId) {
         Shoe shoe = getShoe(shoeId);
         String cards = StringUtils.orEmptyString(shoe.getCards());

@@ -7,6 +7,8 @@ import io.github.clechasseur.deckr.model.Player;
 import io.github.clechasseur.deckr.model.PlayerAndValue;
 import io.github.clechasseur.deckr.repository.GameRepository;
 import io.github.clechasseur.deckr.util.CardUtils;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -31,8 +33,16 @@ public class GameService {
         return gameRepository.findById(id).orElseThrow(() -> new GameNotFoundException(id));
     }
 
+    public Game updateGame(Game game) {
+        return gameRepository.save(game);
+    }
+
     public void deleteGame(Long id) {
-        gameRepository.deleteById(id);
+        try {
+            gameRepository.deleteById(id);
+        } catch (EmptyResultDataAccessException ex) {
+            throw new GameNotFoundException(id);
+        }
     }
 
     public List<PlayerAndValue> getPlayersAndValues(Long gameId) {

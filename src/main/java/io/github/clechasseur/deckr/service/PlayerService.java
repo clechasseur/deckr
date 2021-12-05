@@ -1,13 +1,17 @@
 package io.github.clechasseur.deckr.service;
 
+import io.github.clechasseur.deckr.exception.GameNotFoundException;
 import io.github.clechasseur.deckr.exception.GameWithoutShoeException;
 import io.github.clechasseur.deckr.exception.PlayerNotFoundException;
+import io.github.clechasseur.deckr.model.CardAndSuit;
 import io.github.clechasseur.deckr.model.Game;
 import io.github.clechasseur.deckr.model.Player;
 import io.github.clechasseur.deckr.model.Shoe;
+import io.github.clechasseur.deckr.repository.GameRepository;
 import io.github.clechasseur.deckr.repository.PlayerRepository;
 import io.github.clechasseur.deckr.repository.ShoeRepository;
 import io.github.clechasseur.deckr.util.CardUtils;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,12 +21,12 @@ import java.util.stream.Collectors;
 public class PlayerService {
     private final PlayerRepository playerRepository;
     private final GameService gameService;
-    private final ShoeRepository shoeRepository;
+    private final ShoeService shoeService;
 
-    public PlayerService(PlayerRepository playerRepository, GameService gameService, ShoeRepository shoeRepository) {
+    public PlayerService(PlayerRepository playerRepository, GameService gameService, ShoeService shoeService) {
         this.playerRepository = playerRepository;
         this.gameService = gameService;
-        this.shoeRepository = shoeRepository;
+        this.shoeService = shoeService;
     }
 
     public Player createPlayer(Long gameId, String name) {
@@ -38,7 +42,22 @@ public class PlayerService {
     }
 
     public void deletePlayer(Long id) {
-        playerRepository.deleteById(id);
+        Player player = getPlayer(id);
+        Game game = player.getGame();
+        List<Player> gamePlayers = game.getPlayers();
+        Player playerToRemove = gamePlayers.stream()
+                .filter(p -> p.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new PlayerNotFoundException(id));
+        gamePlayers.remove(playerToRemove);
+        gameService.updateGame(game);
+    }
+
+    public List<CardAndSuit> getCards(Long playerId) {
+        Player player = getPlayer(playerId);
+        return CardUtils.cardsAsList(player.getHand()).stream()
+                .map(CardAndSuit::parse)
+                .collect(Collectors.toList());
     }
 
     public void dealCards(Long playerId, int numCards) {
@@ -53,7 +72,7 @@ public class PlayerService {
             playerHand.addAll(shoeCards.stream().limit(numCards).collect(Collectors.toList()));
             player.setHand(String.join(",", playerHand));
             shoe.setCards(shoeCards.stream().skip(numCards).collect(Collectors.joining(",")));
-            shoeRepository.save(shoe);
+            shoeService.updateShoe(shoe);
             playerRepository.save(player);
         }
     }

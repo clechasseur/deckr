@@ -2,9 +2,12 @@ package io.github.clechasseur.deckr.service;
 
 import io.github.clechasseur.deckr.exception.GameWithoutShoeException;
 import io.github.clechasseur.deckr.exception.PlayerNotFoundException;
+import io.github.clechasseur.deckr.model.Card;
+import io.github.clechasseur.deckr.model.CardAndSuit;
 import io.github.clechasseur.deckr.model.Game;
 import io.github.clechasseur.deckr.model.Player;
 import io.github.clechasseur.deckr.model.Shoe;
+import io.github.clechasseur.deckr.model.Suit;
 import io.github.clechasseur.deckr.repository.PlayerRepository;
 import io.github.clechasseur.deckr.repository.ShoeRepository;
 import org.assertj.core.api.Assertions;
@@ -15,7 +18,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.EmptyResultDataAccessException;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,7 +38,7 @@ public class PlayerServiceTest {
     private GameService gameService;
 
     @Mock
-    private ShoeRepository shoeRepository;
+    private ShoeService shoeService;
 
     @Test
     public void createPlayerReturnsNewPlayer() {
@@ -70,9 +78,45 @@ public class PlayerServiceTest {
 
     @Test
     public void deletePlayerDeletesPlayer() {
+        Player player = new Player();
+        player.setId(1L);
+        Game game = new Game();
+        player.setGame(game);
+        game.setPlayers(new ArrayList<>(Collections.singletonList(player)));
+        Mockito.when(playerRepository.findById(1L)).thenReturn(Optional.of(player));
+
         playerService.deletePlayer(1L);
 
-        Mockito.verify(playerRepository).deleteById(1L);
+        Mockito.verify(playerRepository).findById(1L);
+        ArgumentCaptor<Game> gameArgumentCaptor = ArgumentCaptor.forClass(Game.class);
+        Mockito.verify(gameService).updateGame(gameArgumentCaptor.capture());
+        Game actualGame = gameArgumentCaptor.getValue();
+        Assertions.assertThat(game).isNotNull();
+        Assertions.assertThat(game.getPlayers()).isNullOrEmpty();
+    }
+
+    @Test
+    public void deletePlayerOnANonExistentPlayerThrowsException() {
+        Assertions.assertThatThrownBy(() -> playerService.deletePlayer(1L))
+                .isInstanceOf(PlayerNotFoundException.class);
+    }
+
+    @Test
+    public void getCardsReturnsProperCardsForPlayer() {
+        Player player = new Player();
+        player.setHand("H9,D1,S13,C5");
+        Mockito.when(playerRepository.findById(1L)).thenReturn(Optional.of(player));
+
+        List<CardAndSuit> cards = playerService.getCards(1L);
+
+        Assertions.assertThat(cards).isNotNull();
+        Assertions.assertThat(cards).isEqualTo(Arrays.asList(
+                new CardAndSuit(Card.Nine, Suit.Hearths),
+                new CardAndSuit(Card.Ace, Suit.Diamonds),
+                new CardAndSuit(Card.King, Suit.Spades),
+                new CardAndSuit(Card.Five, Suit.Clubs)
+        ));
+        Mockito.verify(playerRepository).findById(1L);
     }
 
     @Test
@@ -102,7 +146,7 @@ public class PlayerServiceTest {
         Mockito.verify(playerRepository).findById(1L);
         ArgumentCaptor<Shoe> shoeArgumentCaptor = ArgumentCaptor.forClass(Shoe.class);
         ArgumentCaptor<Player> playerArgumentCaptor = ArgumentCaptor.forClass(Player.class);
-        Mockito.verify(shoeRepository).save(shoeArgumentCaptor.capture());
+        Mockito.verify(shoeService).updateShoe(shoeArgumentCaptor.capture());
         Mockito.verify(playerRepository).save(playerArgumentCaptor.capture());
         Shoe actualShoe = shoeArgumentCaptor.getValue();
         Player actualPlayer = playerArgumentCaptor.getValue();
@@ -127,7 +171,7 @@ public class PlayerServiceTest {
         Mockito.verify(playerRepository).findById(1L);
         ArgumentCaptor<Shoe> shoeArgumentCaptor = ArgumentCaptor.forClass(Shoe.class);
         ArgumentCaptor<Player> playerArgumentCaptor = ArgumentCaptor.forClass(Player.class);
-        Mockito.verify(shoeRepository).save(shoeArgumentCaptor.capture());
+        Mockito.verify(shoeService).updateShoe(shoeArgumentCaptor.capture());
         Mockito.verify(playerRepository).save(playerArgumentCaptor.capture());
         Shoe actualShoe = shoeArgumentCaptor.getValue();
         Player actualPlayer = playerArgumentCaptor.getValue();
@@ -152,7 +196,7 @@ public class PlayerServiceTest {
         Mockito.verify(playerRepository).findById(1L);
         ArgumentCaptor<Shoe> shoeArgumentCaptor = ArgumentCaptor.forClass(Shoe.class);
         ArgumentCaptor<Player> playerArgumentCaptor = ArgumentCaptor.forClass(Player.class);
-        Mockito.verify(shoeRepository).save(shoeArgumentCaptor.capture());
+        Mockito.verify(shoeService).updateShoe(shoeArgumentCaptor.capture());
         Mockito.verify(playerRepository).save(playerArgumentCaptor.capture());
         Shoe actualShoe = shoeArgumentCaptor.getValue();
         Player actualPlayer = playerArgumentCaptor.getValue();
@@ -174,6 +218,6 @@ public class PlayerServiceTest {
         playerService.dealCards(1L, 4);
 
         Mockito.verify(playerRepository).findById(1L);
-        Mockito.verifyNoMoreInteractions(playerRepository, shoeRepository);
+        Mockito.verifyNoMoreInteractions(playerRepository, shoeService);
     }
 }

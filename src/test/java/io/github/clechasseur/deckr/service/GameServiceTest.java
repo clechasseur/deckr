@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,10 +61,30 @@ public class GameServiceTest {
     }
 
     @Test
+    public void updateGameReturnsUpdatedGame() {
+        Mockito.when(gameRepository.save(Mockito.any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Game game = Mockito.mock(Game.class);
+        Game updatedGame = gameService.updateGame(game);
+
+        Assertions.assertThat(updatedGame).isNotNull();
+        Assertions.assertThat(updatedGame).isEqualTo(game);
+        Mockito.verify(gameRepository).save(Mockito.any(Game.class));
+    }
+
+    @Test
     public void deleteGameDeletesGame() {
         gameService.deleteGame(1L);
 
         Mockito.verify(gameRepository).deleteById(1L);
+    }
+
+    @Test
+    public void deleteGameOnANonExistentGameThrowsException() {
+        Mockito.doThrow(new EmptyResultDataAccessException(1)).when(gameRepository).deleteById(Mockito.any());
+
+        Assertions.assertThatThrownBy(() -> gameService.deleteGame(1L))
+                .isInstanceOf(GameNotFoundException.class);
     }
 
     @Test

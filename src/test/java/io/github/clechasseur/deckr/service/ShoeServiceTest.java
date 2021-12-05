@@ -69,6 +69,18 @@ public class ShoeServiceTest {
     }
 
     @Test
+    public void updateShoeReturnsUpdatedShoe() {
+        Mockito.when(shoeRepository.save(Mockito.any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Shoe shoe = Mockito.mock(Shoe.class);
+        Shoe updatedShoe = shoeService.updateShoe(shoe);
+
+        Assertions.assertThat(updatedShoe).isNotNull();
+        Assertions.assertThat(updatedShoe).isEqualTo(shoe);
+        Mockito.verify(shoeRepository).save(Mockito.any(Shoe.class));
+    }
+
+    @Test
     public void addDeckToShoeAdds52CardsToShoe() {
         Shoe shoe = new Shoe();
         Mockito.when(shoeRepository.findById(1L)).thenReturn(Optional.of(shoe));
