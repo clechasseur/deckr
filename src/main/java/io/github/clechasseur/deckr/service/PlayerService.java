@@ -9,8 +9,9 @@ import io.github.clechasseur.deckr.model.Shoe;
 import io.github.clechasseur.deckr.repository.PlayerRepository;
 import io.github.clechasseur.deckr.util.CardUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ public class PlayerService {
         this.shoeService = shoeService;
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Player createPlayer(Long gameId, String name) {
         Game game = gameService.getGame(gameId);
         Player player = new Player();
@@ -59,7 +60,7 @@ public class PlayerService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void dealCards(Long playerId, int numCards) {
         Player player = getPlayer(playerId);
         Shoe shoe = player.getGame().getShoe();

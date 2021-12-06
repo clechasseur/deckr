@@ -57,10 +57,6 @@ Currently, the API is unsecured. Not only can anyone call any operation, but dat
 
 In this project, we could use Spring Security to implement such a security layer.
 
-## Concurrency
-
-Currently, the API uses database transactions for multi-query operations. However, this might not be sufficient if the server was to be deployed on multiple instances/in multiple containers. A locking system would probably be required to avoid concurrent modifications of the game's state (for instance, shuffling while drawing cards, drawing by multiple players simultaneously). Such locking would need to be done in the database to be applicable to multiple servers.
-
 ## Game operations
 
 Currently, the API does not really allow any game to be played - the basic operations are a good backbone, but more are needed to make an actual card game. There are two options here, I think: either implement the rules of a real card back, like Black Jack, in the system, or simply provide enough basic operations to allow users to implement their own card game on top of it.

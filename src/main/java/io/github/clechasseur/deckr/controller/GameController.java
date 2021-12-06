@@ -6,12 +6,13 @@ import io.github.clechasseur.deckr.model.CountsBySuit;
 import io.github.clechasseur.deckr.model.Game;
 import io.github.clechasseur.deckr.model.PlayerAndValue;
 import io.github.clechasseur.deckr.model.Shoe;
-import io.github.clechasseur.deckr.model.Suit;
 import io.github.clechasseur.deckr.service.GameService;
 import io.github.clechasseur.deckr.service.ShoeService;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -23,9 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -82,14 +81,14 @@ public class GameController {
 
     @PutMapping("/{gameId}/shoe")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void addDeckToShoe(@PathVariable Long gameId) {
         shoeService.addDeckToShoe(getGameShoe(gameId).getId());
     }
 
     @PatchMapping("/{gameId}/shoe")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void shuffleShoe(@PathVariable Long gameId) {
         shoeService.shuffle(getGameShoe(gameId).getId());
     }
